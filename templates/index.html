@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat Bot</title>
+    <style>
+      #chat-container {
+        width: 500px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      #chat-history {
+        height: 300px;
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      #input-container {
+        margin-top: 10px;
+        display: flex;
+      }
+      #user-input {
+        flex-grow: 1;
+        padding: 5px;
+      }
+      #send-button {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-container">
+      <h1>Chat Bot</h1>
+      <div id="chat-history"></div>
+      <div id="input-container">
+        <input type="text" id="user-input" placeholder="Type your message..." />
+        <button id="send-button">Send</button>
+      </div>
+    </div>
+    <script>
+      const chatHistory = document.getElementById('chat-history');
+      const userInput = document.getElementById('user-input');
+      const sendButton = document.getElementById('send-button');
+
+      sendButton.addEventListener('click', sendMessage);
+      userInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+          displayMessage('User', message);
+          fetchResponse(message);
+          userInput.value = '';
+        }
+      }
+
+      function displayMessage(sender, message) {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${sender}: ${message}`;
+        chatHistory.appendChild(messageElement);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+
+      function fetchResponse(message) {
+        fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              displayMessage('Error', data.error);
+            } else {
+              displayMessage('Bot', data.response);
+            }
+          })
+          .catch((error) => {
+            displayMessage('Error', 'An error occurred');
+            console.error('Error:', error);
+          });
+      }
+    </script>
+  </body>
+</html>
